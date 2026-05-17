@@ -32,7 +32,6 @@
             padding-bottom: 90px;
         }
 
-        /* Uproszczony, czytelny nagłówek */
         header {
             background-color: var(--primary-dark);
             color: white;
@@ -60,7 +59,6 @@
             font-weight: 600;
         }
 
-        /* Panel wyszukiwania i przycisku ZIP */
         .controls {
             display: flex;
             flex-direction: column;
@@ -94,41 +92,34 @@
             -webkit-tap-highlight-color: transparent;
         }
 
-        .zip-button:active {
-            background-color: var(--primary-dark);
-        }
-
-        /* Kafelki */
         .cards-list {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        .card-link {
+        /* Klikalny kafelek jako div (akcja sterowana przez JS) */
+        .card-button-item {
             background-color: var(--card-bg);
             border: 2px solid #e2e8f0;
             border-radius: 12px;
             padding: 16px;
-            text-decoration: none;
-            color: inherit;
             display: flex;
             align-items: center;
             box-shadow: 0 2px 4px rgba(0,0,0,0.02);
+            cursor: pointer;
             -webkit-tap-highlight-color: transparent;
         }
 
-        .card-link:active {
+        .card-button-item:active {
             background-color: #f8fafc;
-            border-color: var(--border-color);
         }
 
-        /* DUŻY, WYRAŹNY ZNACZEK PDF */
         .pdf-icon-box {
             background-color: #fee2e2;
             color: var(--pdf-red);
             border: 2px solid #fca5a5;
-            width: 65px; /* Jeszcze większy i bardziej widoczny */
+            width: 65px;
             height: 65px;
             display: flex;
             flex-direction: column;
@@ -148,7 +139,6 @@
         .pdf-icon-box .label {
             font-size: 0.7rem;
             font-weight: 900;
-            letter-spacing: 0.5px;
             margin-top: 2px;
         }
 
@@ -188,7 +178,6 @@
             border-left: 3px solid #94a3b8;
             display: inline-block;
             width: max-content;
-            max-width: 100%;
         }
 
         .ufi-title {
@@ -200,7 +189,67 @@
             color: #94a3b8;
             font-size: 1.2rem;
             margin-left: 8px;
-            font-weight: bold;
+        }
+
+        /* --- NOWA SEKCJA: INTEGRACJA POGLĄDU LIVE PDF --- */
+        .preview-overlay {
+            display: none; /* Domyślnie ukryte */
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(15, 23, 42, 0.8);
+            z-index: 2000;
+            padding: 10px;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+
+        .preview-box {
+            background-color: white;
+            width: 100%;
+            height: calc(100% - 70px); /* Zostawia miejsce na przyciski na dole */
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+            position: relative;
+        }
+
+        /* Bezpieczna ramka do przewijania PDF na telefonach */
+        .preview-iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .preview-actions {
+            display: flex;
+            gap: 10px;
+            width: 100%;
+            margin-top: 10px;
+        }
+
+        .action-btn {
+            flex: 1;
+            padding: 14px;
+            border: none;
+            border-radius: 8px;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            text-align: center;
+            text-decoration: none;
+        }
+
+        .btn-close {
+            background-color: #64748b;
+            color: white;
+        }
+
+        .btn-download {
+            background-color: #16a34a;
+            color: white;
         }
 
         /* Dolny pasek ratunkowy */
@@ -228,7 +277,6 @@
             text-decoration: none;
             font-weight: 800;
             font-size: 1.1rem;
-            box-shadow: 0 3px 6px rgba(239, 68, 68, 0.3);
         }
 
         .no-data {
@@ -245,7 +293,7 @@
         <div class="company-title">ŁADNEX</div>
         <div class="company-sub">Zakład Samochodowy</div>
         <div class="update-box">
-            Baza zsynchronizowana: <span id="sync-date">...</span>
+            Ostatnie odświeżenie bazy: <span id="sync-date">...</span>
         </div>
     </header>
 
@@ -254,12 +302,12 @@
         <button class="zip-button" onclick="downloadAllZip()">📦 POBIERZ PACZKĘ WSZYSTKICH KART (ZIP)</button>
     </div>
 
-    <div class="cards-list" id="cardsList">
+    <div class="cards-list" id="cardsGrid">
         
-        <a href="https://raw.githubusercontent.com/sebastian1551-star/kartymechanik/main/Benzyny%20handlowe%20PL.pdf" target="_blank" class="card-link">
+        <div class="card-button-item" onclick="showPdfPreview('Benzyna bezołowiowa 95, 98, EuroSuper 95, Super Plus 98', 'https://raw.githubusercontent.com/sebastian1551-star/kartymechanik/main/Benzyny%20handlowe%20PL.pdf')">
             <div class="pdf-icon-box">
                 <div class="num">1</div>
-                <div class="label">PDF</div>
+                <div class="label">POGLĄD</div>
             </div>
             <div class="card-body">
                 <div class="card-vendor">Orlen</div>
@@ -270,26 +318,36 @@
                 </div>
             </div>
             <div class="chevron">➔</div>
-        </a>
+        </div>
 
-        <a href="https://raw.githubusercontent.com/sebastian1551-star/kartymechanik/main/Olej_Silnikowy.pdf" target="_blank" class="card-link">
+        <div class="card-button-item" onclick="showPdfPreview('Olej Silnikowy Platinum Classic 5W-40', 'https://raw.githubusercontent.com/sebastian1551-star/kartymechanik/main/Olej_Silnikowy.pdf')">
             <div class="pdf-icon-box">
                 <div class="num">2</div>
-                <div class="label">PDF</div>
+                <div class="label">POGLĄD</div>
             </div>
             <div class="card-body">
                 <div class="card-vendor">Orlen</div>
                 <div class="card-name">Olej Silnikowy Platinum Classic 5W-40</div>
                 <div class="ufi-badge-zone">
-                    <div class="ufi-line"><span class="ufi-title">UFI:</span> Brak / Uzupełnij w przyszłości</div>
+                    <div class="ufi-line"><span class="ufi-title">UFI:</span> Brak / Do uzupełnienia</div>
                 </div>
             </div>
             <div class="chevron">➔</div>
-        </a>
+        </div>
 
     </div>
 
     <div class="no-data" id="noData">Nie znaleziono pasujących pozycji.</div>
+
+    <div class="preview-overlay" id="previewOverlay">
+        <div class="preview-box">
+            <iframe class="preview-iframe" id="previewIframe" src=""></iframe>
+        </div>
+        <div class="preview-actions">
+            <button class="action-btn btn-close" onclick="closePdfPreview()">❌ ZAMKNIJ</button>
+            <a class="action-btn btn-download" id="modalDownloadBtn" href="#" download>📥 POBIERZ PDF</a>
+        </div>
+    </div>
 
     <div class="emergency-bar">
         <a href="tel:112" class="emergency-btn">📞 TELEFON ALARMOWY: 112</a>
@@ -307,8 +365,8 @@
 
         // 2. Mobilna wyszukiwarka
         const searchInput = document.getElementById('search');
-        const listContainer = document.getElementById('cardsList');
-        const items = listContainer.getElementsByClassName('card-link');
+        const listContainer = document.getElementById('cardsGrid');
+        const items = listContainer.getElementsByClassName('card-button-item');
         const noDataText = document.getElementById('noData');
 
         searchInput.addEventListener('input', function() {
@@ -327,30 +385,51 @@
             noDataText.style.display = found ? "none" : "block";
         });
 
-        // 3. Pobieranie plików z GitHuba i pakowanie do ZIP (Działa automatycznie)
+        // 3. FUNKCJE OBSŁUGI POGLĄDU PDF W LOCIE
+        const overlay = document.getElementById('previewOverlay');
+        const iframe = document.getElementById('previewIframe');
+        const modalDlBtn = document.getElementById('modalDownloadBtn');
+
+        function showPdfPreview(title, pdfUrl) {
+            // Konstruowanie bezpiecznego linku podglądu dla Google Docs Viewer
+            const googleViewerUrl = "https://docs.google.com/gview?embedded=true&url=" + encodeURIComponent(pdfUrl);
+            
+            // Wstrzyknięcie linków do struktury okienka
+            iframe.src = googleViewerUrl;
+            modalDlBtn.href = pdfUrl;
+            modalDlBtn.download = title + ".pdf";
+            
+            // Wyświetlenie okna
+            overlay.style.display = "flex";
+            document.body.style.overflow = "hidden"; // Blokuje przewijanie tła aplikacji
+        }
+
+        function closePdfPreview() {
+            overlay.style.display = "none";
+            iframe.src = ""; // Czyszczenie pamięci ramki
+            document.body.style.overflow = "auto"; // Przywraca przewijanie bazy
+        }
+
+        // 4. Pobieranie plików z GitHuba i pakowanie do ZIP
         async function downloadAllZip() {
             if (typeof JSZip === "undefined") {
-                alert("Trwa ładowanie modułu ZIP. Spróbuj ponownie za 3 sekundy.");
+                alert("Trwa ładowanie modułu ZIP. Spróbuj ponownie za chwilę.");
                 return;
             }
-
             const zip = new JSZip();
-            
-            // Lista plików pobieranych bezpośrednio z Twojego GitHuba
             const files = [
                 { name: "1_Benzyny_handlowe_PL.pdf", url: "https://raw.githubusercontent.com/sebastian1551-star/kartymechanik/main/Benzyny%20handlowe%20PL.pdf" }
             ];
 
-            alert("Rozpoczynam pobieranie i pakowanie plików z serwera GitHub. Proszę czekać...");
+            alert("Pobieram pliki do wspólnej paczki ZIP, proszę czekać...");
 
             try {
                 for (const file of files) {
                     const response = await fetch(file.url);
-                    if (!response.ok) throw new Error("Problem z pobraniem: " + file.name);
+                    if (!response.ok) throw new Error("Problem z plikiem: " + file.name);
                     const blob = await response.blob();
                     zip.file(file.name, blob);
                 }
-
                 const content = await zip.generateAsync({ type: "blob" });
                 const dl = document.createElement("a");
                 dl.href = URL.createObjectURL(content);
@@ -359,7 +438,7 @@
                 dl.click();
                 document.body.removeChild(dl);
             } catch (err) {
-                alert("Nie udało się stworzyć paczki ZIP. Upewnij się, że masz połączenie z siecią podczas pierwszego pobierania zbiorczego.");
+                alert("Nie udało się pobrać wszystkich plików do ZIP. Sprawdź połączenie internetowe.");
                 console.error(err);
             }
         }
