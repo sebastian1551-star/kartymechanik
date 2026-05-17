@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ładnex - Karty Charakterystyki</title>
+    <!-- Google Fonts dla nowoczesnego wyglądu -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <style>
+        :root {
+            --primary-color: #1e293b;
+            --accent-color: #ef4444;
+            --bg-color: #f8fafc;
+            --card-bg: #ffffff;
+            --text-color: #334155;
+            --text-light: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            padding: 15px;
+            padding-bottom: 80px; /* Miejsce na przyklejony footer */
+        }
+
+        /* Nagłówek i info o firmie */
+        header {
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 16px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+        }
+
+        .company-name {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+            color: #f8fafc;
+        }
+
+        .company-sub {
+            font-size: 0.85rem;
+            color: #94a3b8;
+            margin-bottom: 12px;
+        }
+
+        .update-box {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.85rem;
+            display: inline-block;
+        }
+
+        .update-box span {
+            font-weight: 600;
+            color: #38bdf8;
+        }
+
+        /* Wyszukiwarka */
+        .search-container {
+            margin-bottom: 20px;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 16px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            box-shadow: 0 2px 4px rgb(0 0 0 / 0.02);
+        }
+
+        .search-input:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
+        }
+
+        /* Siatka kafelków */
+        .cards-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 12px;
+        }
+
+        /* Styl kafelka */
+        .msds-card {
+            background: var(--card-bg);
+            border-radius: 12px;
+            padding: 16px;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            align-items: center;
+            border: 1px solid #e2e8f0;
+            transition: transform 0.2s, box-shadow 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .msds-card:active {
+            transform: scale(0.98);
+            background-color: #f1f5f9;
+        }
+
+        .card-number {
+            background-color: #f1f5f9;
+            color: var(--primary-color);
+            font-weight: 700;
+            width: 36px;
+            height: 36px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 8px;
+            margin-right: 14px;
+            font-size: 0.95rem;
+            flex-shrink: 0;
+        }
+
+        .card-info {
+            flex-grow: 1;
+        }
+
+        .card-title {
+            font-size: 1rem;
+            font-weight: 600;
+            margin-bottom: 4px;
+            color: #0f172a;
+        }
+
+        .card-vendor {
+            font-size: 0.8rem;
+            color: var(--text-light);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .card-chevron {
+            color: #cbd5e1;
+            font-size: 1.2rem;
+            margin-left: 10px;
+        }
+
+        /* Numer alarmowy - przyklejony na dole */
+        .emergency-bar {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background-color: #ffffff;
+            padding: 12px 15px;
+            box-shadow: 0 -4px 10px rgba(0,0,0,0.05);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 1000;
+        }
+
+        .emergency-button {
+            width: 100%;
+            max-width: 400px;
+            background-color: var(--accent-color);
+            color: white;
+            text-align: center;
+            padding: 14px;
+            border-radius: 10px;
+            text-decoration: none;
+            font-weight: 700;
+            font-size: 1.1rem;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
+        }
+
+        .emergency-button:active {
+            background-color: #dc2626;
+        }
+
+        /* Komunikat o braku wyników */
+        .no-results {
+            text-align: center;
+            padding: 30px;
+            color: var(--text-light);
+            display: none;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- NAGŁÓWEK -->
+    <header>
+        <div class="company-name">ŁADNEX</div>
+        <div class="company-sub">Zakład Samochodowy</div>
+        <div class="update-box">
+            Baza zaktualizowana: <span id="live-date">Ładowanie...</span>
+        </div>
+    </header>
+
+    <!-- WYSZUKIWARKA -->
+    <div class="search-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Wyszukaj substancję lub producenta..." autocomplete="off">
+    </div>
+
+    <!-- LISTA KAFELKÓW -->
+    <div class="cards-grid" id="cardsGrid">
+        
+        <!-- KAFELEK 1 -->
+        <a href="LINK_DO_GITHUB/orlen_benzyna_95.pdf" class="msds-card">
+            <div class="card-number">1</div>
+            <div class="card-info">
+                <div class="card-title">Benzyna bezołowiowa Eurosuper 95</div>
+                <div class="card-vendor">ORLEN</div>
+            </div>
+            <div class="card-chevron">➔</div>
+        </a>
+
+        <!-- KAFELEK 2 -->
+        <a href="LINK_DO_GITHUB/orlen_olej_napedowy.pdf" class="msds-card">
+            <div class="card-number">2</div>
+            <div class="card-info">
+                <div class="card-title">Olej Napędowy (Ekodiesel / Arktyczny)</div>
+                <div class="card-vendor">ORLEN</div>
+            </div>
+            <div class="card-chevron">➔</div>
+        </a>
+
+        <!-- KAFELEK 3 -->
+        <a href="LINK_DO_GITHUB/orlen_olej_silnikowy.pdf" class="msds-card">
+            <div class="card-number">3</div>
+            <div class="card-info">
+                <div class="card-title">Olej Silnikowy Platinum Classic 5W-40</div>
+                <div class="card-vendor">ORLEN</div>
+            </div>
+            <div class="card-chevron">➔</div>
+        </a>
+
+        <!-- KAFELEK 4 -->
+        <a href="LINK_DO_GITHUB/plyn_hamulcowy.pdf" class="msds-card">
+            <div class="card-number">4</div>
+            <div class="card-info">
+                <div class="card-title">Płyn Hamulcowy DOT-4</div>
+                <div class="card-vendor">Inny Producent</div>
+            </div>
+            <div class="card-chevron">➔</div>
+        </a>
+
+        <!-- KAFELEK 5 -->
+        <a href="LINK_DO_GITHUB/zmywacz_do_hamulcow.pdf" class="msds-card">
+            <div class="card-number">5</div>
+            <div class="card-info">
+                <div class="card-title">Zmywacz do hamulców (Aerozol)</div>
+                <div class="card-vendor">WURTH / Inny</div>
+            </div>
+            <div class="card-chevron">➔</div>
+        </a>
+
+    </div>
+
+    <!-- Komunikat w przypadku braku wyników wyszukiwania -->
+    <div class="no-results" id="noResults">
+        Nie znaleziono kart spełniających kryteria.
+    </div>
+
+    <!-- DOLNY PASEK Z NUMEREM ALARMOWYM -->
+    <div class="emergency-bar">
+        <a href="tel:112" class="emergency-button">
+            📞 TELEFON ALARMOWY: 112
+        </a>
+    </div>
+
+    <!-- SKRYPTY JAVASCRIPT -->
+    <script>
+        // 1. Automatyczne odświeżanie daty przy każdym wejściu/odświeżeniu strony
+        function setLiveDate() {
+            const now = new Date();
+            const day = String(now.getDate()).padStart(2, '0');
+            const month = String(now.getMonth() + 1).padStart(2, '0');
+            const year = now.getFullYear();
+            const hours = String(now.getHours()).padStart(2, '0');
+            const minutes = String(now.getMinutes()).padStart(2, '0');
+            
+            const formattedDate = `${day}.${month}.${year} r. o godz. ${hours}:${minutes}`;
+            document.getElementById('live-date').innerText = formattedDate;
+        }
+
+        // Uruchomienie funkcji daty od razu przy załadowaniu strony
+        window.onload = setLiveDate;
+
+        // 2. Logika wyszukiwarki (filtrowanie kafelków na żywo)
+        const searchInput = document.getElementById('searchInput');
+        const cardsGrid = document.getElementById('cardsGrid');
+        const cards = cardsGrid.getElementsByClassName('msds-card');
+        const noResults = document.getElementById('noResults');
+
+        searchInput.addEventListener('input', function() {
+            const filter = searchInput.value.toLowerCase();
+            let hasVisibleCards = false;
+
+            for (let i = 0; i < cards.length; i++) {
+                const title = cards[i].querySelector('.card-title').innerText.toLowerCase();
+                const vendor = cards[i].querySelector('.card-vendor').innerText.toLowerCase();
+
+                if (title.includes(filter) || vendor.includes(filter)) {
+                    cards[i].style.display = "flex";
+                    hasVisibleCards = true;
+                } else {
+                    cards[i].style.display = "none";
+                }
+            }
+
+            // Pokaż/ukryj komunikat o braku wyników
+            if (hasVisibleCards) {
+                noResults.style.display = "none";
+            } else {
+                noResults.style.display = "block";
+            }
+        });
+    </script>
+</body>
+</html>
