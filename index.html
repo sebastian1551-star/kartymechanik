@@ -3,16 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Ładnex - Karty Charakterystyki</title>
-    <!-- Google Fonts dla nowoczesnego wyglądu -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <title>Ładnex - Karty Charakterystyki (Offline)</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jszip/3.10.1/jszip.min.js"></script>
     
     <style>
         :root {
             --primary-color: #1e293b;
             --accent-color: #ef4444;
+            --pdf-red: #dc2626;
+            --zip-orange: #d97706; /* Kolor przycisku ZIP */
             --bg-color: #f8fafc;
             --card-bg: #ffffff;
             --text-color: #334155;
@@ -23,17 +22,16 @@
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: 'Inter', sans-serif;
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-color);
             padding: 15px;
-            padding-bottom: 80px; /* Miejsce na przyklejony footer */
+            padding-bottom: 90px; /* Miejsce na dolny pasek */
         }
 
-        /* Nagłówek i info o firmie */
         header {
             background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
             color: white;
@@ -69,8 +67,22 @@
             color: #38bdf8;
         }
 
-        /* Wyszukiwarka */
-        .search-container {
+        .offline-badge {
+            background-color: #22c55e;
+            color: white;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            margin-left: 5px;
+            vertical-align: middle;
+        }
+
+        /* Sekcja wyszukiwarki i przycisku masowego pobierania */
+        .controls-container {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
             margin-bottom: 20px;
         }
 
@@ -81,54 +93,81 @@
             border-radius: 12px;
             font-size: 1rem;
             outline: none;
-            transition: all 0.3s ease;
             box-shadow: 0 2px 4px rgb(0 0 0 / 0.02);
         }
 
         .search-input:focus {
             border-color: #3b82f6;
-            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.15);
         }
 
-        /* Siatka kafelków */
+        /* Nowy przycisk POBIERZ WSZYSTKIE (ZIP) */
+        .download-all-btn {
+            background-color: var(--zip-orange);
+            color: white;
+            border: none;
+            padding: 14px;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            font-weight: 700;
+            cursor: pointer;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 8px;
+            box-shadow: 0 4px 6px rgba(217, 119, 6, 0.15);
+            transition: background-color 0.2s;
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .download-all-btn:active {
+            background-color: #b45309;
+        }
+
         .cards-grid {
             display: grid;
             grid-template-columns: 1fr;
             gap: 12px;
         }
 
-        /* Styl kafelka */
         .msds-card {
             background: var(--card-bg);
             border-radius: 12px;
-            padding: 16px;
-            text-decoration: none;
-            color: inherit;
+            padding: 18px;
+            border: 2px solid #fee2e2;
+            background: linear-gradient(to right, #ffffff, #fff5f5);
             display: flex;
             align-items: center;
-            border: 1px solid #e2e8f0;
-            transition: transform 0.2s, box-shadow 0.2s;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
             -webkit-tap-highlight-color: transparent;
         }
 
         .msds-card:active {
             transform: scale(0.98);
-            background-color: #f1f5f9;
+            background-color: #ffe4e4;
         }
 
         .card-number {
-            background-color: #f1f5f9;
-            color: var(--primary-color);
+            background-color: var(--pdf-red);
+            color: white;
             font-weight: 700;
-            width: 36px;
-            height: 36px;
+            width: 44px;
+            height: 44px;
             display: flex;
+            flex-direction: column;
             align-items: center;
             justify-content: center;
-            border-radius: 8px;
+            border-radius: 10px;
             margin-right: 14px;
-            font-size: 0.95rem;
+            font-size: 0.8rem;
             flex-shrink: 0;
+        }
+
+        .card-number span {
+            font-size: 0.65rem;
+            font-weight: 400;
+            opacity: 0.9;
+            margin-top: -2px;
         }
 
         .card-info {
@@ -136,26 +175,45 @@
         }
 
         .card-title {
-            font-size: 1rem;
-            font-weight: 600;
+            font-size: 1.05rem;
+            font-weight: 700;
             margin-bottom: 4px;
             color: #0f172a;
         }
 
         .card-vendor {
             font-size: 0.8rem;
-            color: var(--text-light);
+            color: var(--pdf-red);
+            font-weight: 600;
             text-transform: uppercase;
-            letter-spacing: 0.5px;
+            margin-bottom: 6px;
+        }
+
+        .ufi-container {
+            background-color: #f1f5f9;
+            padding: 6px 10px;
+            border-radius: 6px;
+            margin-top: 6px;
+            border-left: 3px solid var(--text-light);
+        }
+
+        .ufi-block {
+            font-size: 0.75rem;
+            color: var(--text-color);
+            font-family: monospace;
+        }
+
+        .ufi-label {
+            font-weight: bold;
+            color: #0f172a;
         }
 
         .card-chevron {
-            color: #cbd5e1;
-            font-size: 1.2rem;
+            color: var(--pdf-red);
+            font-size: 1.4rem;
             margin-left: 10px;
         }
 
-        /* Numer alarmowy - przyklejony na dole */
         .emergency-bar {
             position: fixed;
             bottom: 0;
@@ -185,14 +243,8 @@
             justify-content: center;
             align-items: center;
             gap: 8px;
-            box-shadow: 0 4px 6px rgba(239, 68, 68, 0.2);
         }
 
-        .emergency-button:active {
-            background-color: #dc2626;
-        }
-
-        /* Komunikat o braku wyników */
         .no-results {
             text-align: center;
             padding: 30px;
@@ -203,90 +255,59 @@
 </head>
 <body>
 
-    <!-- NAGŁÓWEK -->
     <header>
-        <div class="company-name">ŁADNEX</div>
+        <div class="company-name">ŁADNEX <span class="offline-badge">TRYB OFFLINE</span></div>
         <div class="company-sub">Zakład Samochodowy</div>
         <div class="update-box">
-            Baza zaktualizowana: <span id="live-date">Ładowanie...</span>
+            Baza odświeżona: <span id="live-date">Ładowanie...</span>
         </div>
     </header>
 
-    <!-- WYSZUKIWARKA -->
-    <div class="search-container">
-        <input type="text" id="searchInput" class="search-input" placeholder="Wyszukaj substancję lub producenta..." autocomplete="off">
+    <div class="controls-container">
+        <input type="text" id="searchInput" class="search-input" placeholder="Wyszukaj produkt, producenta lub UFI..." autocomplete="off">
+        <button class="download-all-btn" onclick="downloadAllAsZip()">
+            📦 POBIERZ WSZYSTKIE KARTY (ZIP)
+        </button>
     </div>
 
-    <!-- LISTA KAFELKÓW -->
     <div class="cards-grid" id="cardsGrid">
         
-        <!-- KAFELEK 1 -->
-        <a href="LINK_DO_GITHUB/orlen_benzyna_95.pdf" class="msds-card">
-            <div class="card-number">1</div>
+        <div class="msds-card" onclick="openEmbeddedPDF()">
+            <div class="card-number">
+                1
+                <span>PDF</span>
+            </div>
             <div class="card-info">
-                <div class="card-title">Benzyna bezołowiowa Eurosuper 95</div>
-                <div class="card-vendor">ORLEN</div>
+                <div class="card-vendor">ORLEN / Benzyny Handlowe</div>
+                <div class="card-title">Benzyna bezołowiowa 95, 98, EuroSuper 95, Super Plus 98, EFECTA 95, VERVA 98</div>
+                
+                <div class="ufi-container">
+                    <div class="ufi-block"><span class="ufi-label">UFI:</span> 1V30-Q0VS-G00H-KEX6</div>
+                    <div class="ufi-block"><span class="ufi-label">UFI:</span> YY30-70K5-T000-8SH8</div>
+                </div>
             </div>
             <div class="card-chevron">➔</div>
-        </a>
-
-        <!-- KAFELEK 2 -->
-        <a href="LINK_DO_GITHUB/orlen_olej_napedowy.pdf" class="msds-card">
-            <div class="card-number">2</div>
-            <div class="card-info">
-                <div class="card-title">Olej Napędowy (Ekodiesel / Arktyczny)</div>
-                <div class="card-vendor">ORLEN</div>
-            </div>
-            <div class="card-chevron">➔</div>
-        </a>
-
-        <!-- KAFELEK 3 -->
-        <a href="LINK_DO_GITHUB/orlen_olej_silnikowy.pdf" class="msds-card">
-            <div class="card-number">3</div>
-            <div class="card-info">
-                <div class="card-title">Olej Silnikowy Platinum Classic 5W-40</div>
-                <div class="card-vendor">ORLEN</div>
-            </div>
-            <div class="card-chevron">➔</div>
-        </a>
-
-        <!-- KAFELEK 4 -->
-        <a href="LINK_DO_GITHUB/plyn_hamulcowy.pdf" class="msds-card">
-            <div class="card-number">4</div>
-            <div class="card-info">
-                <div class="card-title">Płyn Hamulcowy DOT-4</div>
-                <div class="card-vendor">Inny Producent</div>
-            </div>
-            <div class="card-chevron">➔</div>
-        </a>
-
-        <!-- KAFELEK 5 -->
-        <a href="LINK_DO_GITHUB/zmywacz_do_hamulcow.pdf" class="msds-card">
-            <div class="card-number">5</div>
-            <div class="card-info">
-                <div class="card-title">Zmywacz do hamulców (Aerozol)</div>
-                <div class="card-vendor">WURTH / Inny</div>
-            </div>
-            <div class="card-chevron">➔</div>
-        </a>
+        </div>
 
     </div>
 
-    <!-- Komunikat w przypadku braku wyników wyszukiwania -->
     <div class="no-results" id="noResults">
         Nie znaleziono kart spełniających kryteria.
     </div>
 
-    <!-- DOLNY PASEK Z NUMEREM ALARMOWYM -->
     <div class="emergency-bar">
         <a href="tel:112" class="emergency-button">
             📞 TELEFON ALARMOWY: 112
         </a>
     </div>
 
-    <!-- SKRYPTY JAVASCRIPT -->
     <script>
-        // 1. Automatyczne odświeżanie daty przy każdym wejściu/odświeżeniu strony
+        // --- PRZYGOTOWANIE BAZY DANYCH OFFLINE DLA PLIKÓW ---
+        // Zastąp poniższy przykładowy ciąg pełnym kodem Base64 Twojego pliku PDF wygenerowanym na base64encode.org
+        const KARTA_1_BASE64 = "JVBERi0xLjQKJconstructionStringExample...W1mXQo%%"; 
+        const KARTA_1_NAZWA = "Benzyny_handlowe_PL_Orlen.pdf";
+
+        // 1. DYNAMICZNA DATA PRZY WEJŚCIU
         function setLiveDate() {
             const now = new Date();
             const day = String(now.getDate()).padStart(2, '0');
@@ -295,14 +316,11 @@
             const hours = String(now.getHours()).padStart(2, '0');
             const minutes = String(now.getMinutes()).padStart(2, '0');
             
-            const formattedDate = `${day}.${month}.${year} r. o godz. ${hours}:${minutes}`;
-            document.getElementById('live-date').innerText = formattedDate;
+            document.getElementById('live-date').innerText = `${day}.${month}.${year} r. o godz. ${hours}:${minutes}`;
         }
-
-        // Uruchomienie funkcji daty od razu przy załadowaniu strony
         window.onload = setLiveDate;
 
-        // 2. Logika wyszukiwarki (filtrowanie kafelków na żywo)
+        // 2. LOGIKA WYSZUKIWARKI
         const searchInput = document.getElementById('searchInput');
         const cardsGrid = document.getElementById('cardsGrid');
         const cards = cardsGrid.getElementsByClassName('msds-card');
@@ -315,22 +333,68 @@
             for (let i = 0; i < cards.length; i++) {
                 const title = cards[i].querySelector('.card-title').innerText.toLowerCase();
                 const vendor = cards[i].querySelector('.card-vendor').innerText.toLowerCase();
+                const ufi = cards[i].querySelector('.ufi-container').innerText.toLowerCase();
 
-                if (title.includes(filter) || vendor.includes(filter)) {
+                if (title.includes(filter) || vendor.includes(filter) || ufi.includes(filter)) {
                     cards[i].style.display = "flex";
                     hasVisibleCards = true;
                 } else {
                     cards[i].style.display = "none";
                 }
             }
-
-            // Pokaż/ukryj komunikat o braku wyników
-            if (hasVisibleCards) {
-                noResults.style.display = "none";
-            } else {
-                noResults.style.display = "block";
-            }
+            noResults.style.display = hasVisibleCards ? "none" : "block";
         });
+
+        // 3. FUNKCJA OTWIERANIA JEDNEGO PDF
+        function openEmbeddedPDF() {
+            const downloadLink = document.createElement("a");
+            downloadLink.href = "data:application/pdf;base64," + KARTA_1_BASE64;
+            downloadLink.download = KARTA_1_NAZWA;
+            document.body.appendChild(downloadLink);
+            downloadLink.click();
+            document.body.removeChild(downloadLink);
+        }
+
+        // 4. NOWA FUNKCJA: PAKOWANIE I POBIERANIE WSZYSTKICH KART JAKO JEDEN ZIP (OFFLINE)
+        function downloadAllAsZip() {
+            // Sprawdzenie czy biblioteka załadowała się pomyślnie
+            if (typeof JSZip === "undefined") {
+                alert("Funkcja paczki ZIP inicjuje się. Jeśli jesteś całkowicie offline, upewnij się, że uruchomiłeś aplikację chociaż raz z dostępem do sieci, aby telefon zapisał bibliotekę ZIP.");
+                return;
+            }
+
+            const zip = new JSZip();
+
+            // Konwersja ciągu tekstowego Base64 na format czystych danych akceptowany przez ZIP
+            function base64ToUint8Array(base64) {
+                const binaryString = atob(base64.replace(/%%$/, '')); // Oczyszczenie z ewentualnych znaczników testowych
+                const len = binaryString.length;
+                const bytes = new Uint8Array(len);
+                for (let i = 0; i < len; i++) {
+                    bytes[i] = binaryString.charCodeAt(i);
+                }
+                return bytes.buffer;
+            }
+
+            // Dodawanie plików do archiwum ZIP (jeśli w przyszłości dodasz Kartę 2, 3, dopisujesz je tutaj w ten sam sposób)
+            try {
+                const fileData1 = base64ToUint8Array(KARTA_1_BASE64);
+                zip.file(KARTA_1_NAZWA, fileData1, {binary: true});
+                
+                // Generowanie gotowej paczki ZIP bezpośrednio na urządzeniu
+                zip.generateAsync({type: "blob"}).then(function(content) {
+                    const zipLink = document.createElement("a");
+                    zipLink.href = URL.createObjectURL(content);
+                    zipLink.download = "Karty_Charakterystyki_Ladnex.zip";
+                    document.body.appendChild(zipLink);
+                    zipLink.click();
+                    document.body.removeChild(zipLink);
+                });
+            } catch (error) {
+                alert("Wystąpił błąd podczas generowania paczki. Upewnij się, że poprawnie wkleiłeś kod Base64 pliku PDF.");
+                console.error(error);
+            }
+        }
     </script>
 </body>
 </html>
