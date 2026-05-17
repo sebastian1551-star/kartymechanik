@@ -32,7 +32,7 @@
             padding-bottom: 90px;
         }
 
-        /* Uproszczony nagłówek */
+        /* Uproszczony, czytelny nagłówek */
         header {
             background-color: var(--primary-dark);
             color: white;
@@ -60,7 +60,7 @@
             font-weight: 600;
         }
 
-        /* Panel wyszukiwarki i przycisku ZIP */
+        /* Panel wyszukiwania i przycisku ZIP */
         .controls {
             display: flex;
             flex-direction: column;
@@ -98,14 +98,13 @@
             background-color: var(--primary-dark);
         }
 
-        /* Siatka i kafelki */
+        /* Kafelki */
         .cards-list {
             display: flex;
             flex-direction: column;
             gap: 10px;
         }
 
-        /* Link jako duży, czysty kafelek */
         .card-link {
             background-color: var(--card-bg);
             border: 2px solid #e2e8f0;
@@ -124,13 +123,13 @@
             border-color: var(--border-color);
         }
 
-        /* DUŻY ZNACZEK PDF */
+        /* DUŻY, WYRAŹNY ZNACZEK PDF */
         .pdf-icon-box {
             background-color: #fee2e2;
             color: var(--pdf-red);
             border: 2px solid #fca5a5;
-            width: 55px;
-            height: 55px;
+            width: 65px; /* Jeszcze większy i bardziej widoczny */
+            height: 65px;
             display: flex;
             flex-direction: column;
             align-items: center;
@@ -141,13 +140,13 @@
         }
 
         .pdf-icon-box .num {
-            font-size: 1.1rem;
+            font-size: 1.3rem;
             font-weight: 800;
             line-height: 1;
         }
 
         .pdf-icon-box .label {
-            font-size: 0.65rem;
+            font-size: 0.7rem;
             font-weight: 900;
             letter-spacing: 0.5px;
             margin-top: 2px;
@@ -173,7 +172,6 @@
             margin-bottom: 6px;
         }
 
-        /* Czytelne kody UFI */
         .ufi-badge-zone {
             display: flex;
             flex-direction: column;
@@ -205,7 +203,7 @@
             font-weight: bold;
         }
 
-        /* Dolny pasek SOS */
+        /* Dolny pasek ratunkowy */
         .emergency-bar {
             position: fixed;
             bottom: 0;
@@ -233,10 +231,6 @@
             box-shadow: 0 3px 6px rgba(239, 68, 68, 0.3);
         }
 
-        .emergency-btn:active {
-            background-color: #dc2626;
-        }
-
         .no-data {
             text-align: center;
             padding: 20px;
@@ -251,18 +245,18 @@
         <div class="company-title">ŁADNEX</div>
         <div class="company-sub">Zakład Samochodowy</div>
         <div class="update-box">
-            Baza aktywna od: <span id="sync-date">...</span>
+            Baza zsynchronizowana: <span id="sync-date">...</span>
         </div>
     </header>
 
     <div class="controls">
-        <input type="text" id="search" class="search-bar" placeholder="Wyszukaj paliwo, producenta lub kod UFI..." autocomplete="off">
-        <button class="zip-button" onclick="packAllToZip()">📦 POBIERZ PACZKĘ WSZYSTKICH KART (ZIP)</button>
+        <input type="text" id="search" class="search-bar" placeholder="Wyszukaj produkt, producenta lub kod UFI..." autocomplete="off">
+        <button class="zip-button" onclick="downloadAllZip()">📦 POBIERZ PACZKĘ WSZYSTKICH KART (ZIP)</button>
     </div>
 
     <div class="cards-list" id="cardsList">
         
-        <a id="card-1" href="data:application/pdf;base64,JVBERi0xLjQKJconstructionStringExample..." target="_blank" class="card-link">
+        <a href="https://raw.githubusercontent.com/sebastian1551-star/kartymechanik/main/Benzyny%20handlowe%20PL.pdf" target="_blank" class="card-link">
             <div class="pdf-icon-box">
                 <div class="num">1</div>
                 <div class="label">PDF</div>
@@ -278,7 +272,7 @@
             <div class="chevron">➔</div>
         </a>
 
-        <a id="card-2" href="data:application/pdf;base64,JVBERi0xLjQKJ_KARTA_2_BASE64_TUTAJ..." target="_blank" class="card-link">
+        <a href="https://raw.githubusercontent.com/sebastian1551-star/kartymechanik/main/Olej_Silnikowy.pdf" target="_blank" class="card-link">
             <div class="pdf-icon-box">
                 <div class="num">2</div>
                 <div class="label">PDF</div>
@@ -287,7 +281,7 @@
                 <div class="card-vendor">Orlen</div>
                 <div class="card-name">Olej Silnikowy Platinum Classic 5W-40</div>
                 <div class="ufi-badge-zone">
-                    <div class="ufi-line"><span class="ufi-title">UFI:</span> Brak danych / uzupełnij</div>
+                    <div class="ufi-line"><span class="ufi-title">UFI:</span> Brak / Uzupełnij w przyszłości</div>
                 </div>
             </div>
             <div class="chevron">➔</div>
@@ -302,7 +296,7 @@
     </div>
 
     <script>
-        // 1. Aktualizacja daty i czasu przy każdym uruchomieniu/odświeżeniu
+        // 1. Zawsze aktualna data i czas otwarcia aplikacji
         function updateTime() {
             const d = new Date();
             const pad = (n) => String(n).padStart(2, '0');
@@ -311,7 +305,7 @@
         }
         window.onload = updateTime;
 
-        // 2. Szybka wyszukiwarka na telefonie
+        // 2. Mobilna wyszukiwarka
         const searchInput = document.getElementById('search');
         const listContainer = document.getElementById('cardsList');
         const items = listContainer.getElementsByClassName('card-link');
@@ -333,46 +327,39 @@
             noDataText.style.display = found ? "none" : "block";
         });
 
-        // 3. Zbiorcza paczka ZIP tworzona bezpośrednio z odnośników kafelków (Działa w 100% Offline)
-        function packAllToZip() {
+        // 3. Pobieranie plików z GitHuba i pakowanie do ZIP (Działa automatycznie)
+        async function downloadAllZip() {
             if (typeof JSZip === "undefined") {
-                alert("Trwa inicjalizacja modułu ZIP. Spróbuj ponownie za chwilę.");
+                alert("Trwa ładowanie modułu ZIP. Spróbuj ponownie za 3 sekundy.");
                 return;
             }
 
             const zip = new JSZip();
+            
+            // Lista plików pobieranych bezpośrednio z Twojego GitHuba
+            const files = [
+                { name: "1_Benzyny_handlowe_PL.pdf", url: "https://raw.githubusercontent.com/sebastian1551-star/kartymechanik/main/Benzyny%20handlowe%20PL.pdf" }
+            ];
 
-            // Funkcja wyciągająca czysty tekst Base64 bezpośrednio z linku href kafelka
-            function getBase64FromHref(elementId) {
-                const hrefData = document.getElementById(elementId).getAttribute('href');
-                return hrefData.split(',')[1]; // Odcina nagłówek "data:application/pdf;base64,"
-            }
-
-            // Pomocnicza konwersja na format binarny akceptowany przez pliki ZIP
-            function toBinary(b64) {
-                const binStr = atob(b64);
-                const len = binStr.length;
-                const arr = new Uint8Array(len);
-                for (let i = 0; i < len; i++) { arr[i] = binStr.charCodeAt(i); }
-                return arr.buffer;
-            }
+            alert("Rozpoczynam pobieranie i pakowanie plików z serwera GitHub. Proszę czekać...");
 
             try {
-                // Pobieramy dane z kafelka 1 i kafelka 2, pakując je do wspólnego archiwum
-                zip.file("1_Benzyny_handlowe_Orlen.pdf", toBinary(getBase64FromHref("card-1")), {binary: true});
-                zip.file("2_Olej_Platinum_Classic_Orlen.pdf", toBinary(getBase64FromHref("card-2")), {binary: true});
+                for (const file of files) {
+                    const response = await fetch(file.url);
+                    if (!response.ok) throw new Error("Problem z pobraniem: " + file.name);
+                    const blob = await response.blob();
+                    zip.file(file.name, blob);
+                }
 
-                // Generowanie i natychmiastowe pobranie gotowego archiwum ZIP
-                zip.generateAsync({type: "blob"}).then(function(content) {
-                    const dl = document.createElement("a");
-                    dl.href = URL.createObjectURL(content);
-                    dl.download = "Karty_Charakterystyki_Ladnex.zip";
-                    document.body.appendChild(dl);
-                    dl.click();
-                    document.body.removeChild(dl);
-                });
+                const content = await zip.generateAsync({ type: "blob" });
+                const dl = document.createElement("a");
+                dl.href = URL.createObjectURL(content);
+                dl.download = "Karty_Charakterystyki_Ladnex.zip";
+                document.body.appendChild(dl);
+                dl.click();
+                document.body.removeChild(dl);
             } catch (err) {
-                alert("Nie można wygenerować paczki ZIP. Upewnij się, że poprawnie wkleiłeś kody Base64 w sekcjach href kafelków.");
+                alert("Nie udało się stworzyć paczki ZIP. Upewnij się, że masz połączenie z siecią podczas pierwszego pobierania zbiorczego.");
                 console.error(err);
             }
         }
